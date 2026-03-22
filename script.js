@@ -63,14 +63,57 @@ const tasks = [
     status: "todo",
     date: "2026-02-10"
   }
-]             
+]
+
+// State variables — always at the top before any functions use them
+let currentTab = "all"
+let currentSearch = ""
+let currentSort = "date"
+
+function updateStats() {
+  const today = new Date()
+
+  const inProgress = tasks.filter(function(task) {
+    return task.status === "in-progress"
+  })
+
+  const done = tasks.filter(function(task) {
+    return task.status === "done"
+  })
+
+  const overdue = tasks.filter(function(task) {
+    const dueDate = new Date(task.date)
+    return dueDate < today && task.status !== "done"
+  })
+
+  document.getElementById("stat-total").textContent = tasks.length
+  document.getElementById("stat-inprogress").textContent = inProgress.length
+  document.getElementById("stat-done").textContent = done.length
+  document.getElementById("stat-overdue").textContent = overdue.length
+}
 
 function renderTasks() {
   const container = document.getElementById("task-container")
-  
   container.innerHTML = ""
-  
-  tasks.forEach(function(task) {
+
+  let filtered = tasks.filter(function(task) {
+    if (currentTab === "all") return true
+    return task.status === currentTab
+  })
+
+  filtered = filtered.filter(function(task) {
+    const search = currentSearch.toLowerCase()
+    return task.name.toLowerCase().includes(search) ||
+           task.desc.toLowerCase().includes(search)
+  })
+
+  if (filtered.length === 0) {
+    container.innerHTML = "<p>No tasks found.</p>"
+    updateStats()
+    return
+  }
+
+  filtered.forEach(function(task) {
     const card = document.createElement("div")
     card.innerHTML = `
       <h3>${task.name}</h3>
@@ -81,6 +124,35 @@ function renderTasks() {
     `
     container.appendChild(card)
   })
+
+  updateStats()
 }
 
+function initTabs() {
+  const tabs = document.querySelectorAll(".tab")
+
+  tabs.forEach(function(tab) {
+    tab.addEventListener("click", function() {
+      tabs.forEach(function(t) {
+        t.classList.remove("active-tab")
+      })
+      tab.classList.add("active-tab")
+      currentTab = tab.dataset.status
+      renderTasks()
+    })
+  })
+}
+
+function initSearch() {
+  const searchInput = document.getElementById("search-input")
+
+  searchInput.addEventListener("input", function() {
+    currentSearch = searchInput.value
+    renderTasks()
+  })
+}
+
+// Run everything
 renderTasks()
+initTabs()
+initSearch()
