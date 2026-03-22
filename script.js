@@ -66,10 +66,20 @@ const tasks = [
 ]             
 
 function renderTasks() {
-  console.log("Rendering " + tasks.length + " tasks")
+  const container = document.getElementById("task-container")
+  
+  container.innerHTML = ""
   
   tasks.forEach(function(task) {
-    console.log(task.name + " — " + task.status)
+    const card = document.createElement("div")
+    card.innerHTML = `
+      <h3>${task.name}</h3>
+      <p>${task.desc}</p>
+      <p>Priority: ${task.priority}</p>
+      <p>Status: ${task.status}</p>
+      <p>Due: ${task.date}</p>
+    `
+    container.appendChild(card)
   })
 }
 
