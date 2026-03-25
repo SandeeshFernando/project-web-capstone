@@ -106,6 +106,25 @@ function renderTasks() {
     return task.name.toLowerCase().includes(search) ||
            task.desc.toLowerCase().includes(search)
   })
+// Sort
+  if (currentSort === "name") {
+    filtered.sort(function(a, b) {
+      if (a.name < b.name) return -1
+      if (a.name > b.name) return 1
+      return 0
+    })
+  } else if (currentSort === "priority") {
+    const order = { high: 1, medium: 2, low: 3 }
+    filtered.sort(function(a, b) {
+      return order[a.priority] - order[b.priority]
+    })
+  } else if (currentSort === "date") {
+    filtered.sort(function(a, b) {
+      return new Date(a.date) - new Date(b.date)
+    })
+  }
+
+
 
   if (filtered.length === 0) {
     container.innerHTML = "<p>No tasks found.</p>"
@@ -152,7 +171,114 @@ function initSearch() {
   })
 }
 
-// Run everything
+
+function initModal() {
+  const overlay = document.getElementById("modal-overlay")
+  const addBtn = document.getElementById("add-task-btn")
+  const closeBtn = document.getElementById("modal-close")
+  const cancelBtn = document.getElementById("modal-cancel")
+  const submitBtn = document.getElementById("modal-submit")
+
+  // open modal
+  addBtn.addEventListener("click", function() {
+    overlay.style.display = "flex"
+  })
+
+  // close modal — X button
+  closeBtn.addEventListener("click", function() {
+    closeModal()
+  })
+
+  // close modal — Cancel button
+  cancelBtn.addEventListener("click", function() {
+    closeModal()
+  })
+
+  // close modal — clicking the overlay background
+  overlay.addEventListener("click", function(e) {
+    if (e.target === overlay) {
+      closeModal()
+    }
+  })
+
+  // close modal — pressing Escape key
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      closeModal()
+    }
+  })
+
+  // submit the form
+  submitBtn.addEventListener("click", function() {
+    const name = document.getElementById("input-name").value.trim()
+    const desc = document.getElementById("input-desc").value.trim()
+    const priority = document.getElementById("input-priority").value
+    const status = document.getElementById("input-status").value
+    const date = document.getElementById("input-date").value
+
+    // name is required
+    if (name === "") {
+      alert("Please enter a task name!")
+      return
+    }
+
+    // create new task object
+    const newTask = {
+      id: tasks.length + 1,
+      name: name,
+      desc: desc,
+      priority: priority,
+      status: status,
+      date: date
+    }
+
+    // add to array and redraw
+    tasks.push(newTask)
+    renderTasks()
+    closeModal()
+  })
+}
+
+function closeModal() {
+  const overlay = document.getElementById("modal-overlay")
+  overlay.style.display = "none"
+
+  // clear the form
+  document.getElementById("input-name").value = ""
+  document.getElementById("input-desc").value = ""
+  document.getElementById("input-date").value = ""
+  document.getElementById("input-priority").value = "low"
+  document.getElementById("input-status").value = "todo"
+}
+
+
+
+
+
+function initSort() {
+  const sortBtn = document.getElementById("sort-btn")
+  const sortMenu = document.getElementById("sort-menu")
+  const sortOptions = document.querySelectorAll(".sort-option")
+
+  sortBtn.addEventListener("click", function(e) {
+    e.stopPropagation()
+    sortMenu.classList.toggle("visible")
+  })
+
+  sortOptions.forEach(function(option) {
+    option.addEventListener("click", function() {
+      currentSort = option.dataset.sort
+      sortMenu.classList.remove("visible")
+      renderTasks()
+    })
+  })
+
+  document.addEventListener("click", function() {
+    sortMenu.classList.remove("visible")
+  })
+}
 renderTasks()
 initTabs()
 initSearch()
+initSort()
+initModal()
