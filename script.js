@@ -65,7 +65,7 @@ const tasks = [
   }
 ]
 
-// State variables — always at the top before any functions use them
+
 let currentTab = "all"
 let currentSearch = ""
 let currentSort = "date"
@@ -106,7 +106,8 @@ function renderTasks() {
     return task.name.toLowerCase().includes(search) ||
            task.desc.toLowerCase().includes(search)
   })
-// Sort
+// Sort kranne methna
+
   if (currentSort === "name") {
     filtered.sort(function(a, b) {
       if (a.name < b.name) return -1
@@ -131,6 +132,7 @@ function renderTasks() {
     updateStats()
     return
   }
+//status label is going to be like this
 
   filtered.forEach(function(task) {
     const card = document.createElement("div")
@@ -146,6 +148,35 @@ function renderTasks() {
 
   updateStats()
 }
+
+//delete tasks
+
+function deleteTask(id) {
+  tasks = tasks.filter(t => t.id !== id)
+  renderTasks()
+}
+
+function advanceStatus(id) {
+  const task = tasks.find(t => t.id === id)
+  if (task.status === "todo") task.status = "in-progress"
+  else if (task.status === "in-progress") task.status = "done"
+  else if (task.status === "done") task.status = "todo"
+  renderTasks()
+}
+ 
+function initCardActions() {
+  const container = document.getElementById("task-container")
+  container.addEventListener("click", function(e) {
+    if (e.target.classList.contains("status-btn")) {
+      advanceStatus(Number(e.target.dataset.id))
+    }
+    if (e.target.classList.contains("delete-btn")) {
+      deleteTask(Number(e.target.dataset.id))
+    }
+  })
+}
+
+  
 
 function initTabs() {
   const tabs = document.querySelectorAll(".tab")
@@ -171,6 +202,29 @@ function initSearch() {
   })
 }
 
+function initSort() {
+  const sortBtn = document.getElementById("sort-btn")
+  const sortMenu = document.getElementById("sort-menu")
+ 
+  sortBtn.addEventListener("click", function(e) {
+    e.stopPropagation()
+    sortMenu.classList.toggle("visible")
+  })
+
+
+  document.querySelectorAll(".sort-option").forEach(function(option) {
+    option.addEventListener("click", function() {
+      currentSort = option.dataset.sort
+      sortMenu.classList.remove("visible")
+      renderTasks()
+    })
+  })
+
+  document.addEventListener("click", function() {
+    sortMenu.classList.remove("visible")
+  })
+}
+ 
 
 function initModal() {
   const overlay = document.getElementById("modal-overlay")
@@ -254,31 +308,29 @@ function closeModal() {
 
 
 
+//hamberburger menu forr mobile
 
-function initSort() {
-  const sortBtn = document.getElementById("sort-btn")
-  const sortMenu = document.getElementById("sort-menu")
-  const sortOptions = document.querySelectorAll(".sort-option")
-
-  sortBtn.addEventListener("click", function(e) {
+function initHamburger() {
+  const btn = document.getElementById("hamburger-btn")
+  const menu = document.getElementById("mobile-menu")
+ 
+  btn.addEventListener("click", function(e) {
     e.stopPropagation()
-    sortMenu.classList.toggle("visible")
+    menu.classList.toggle("open")
   })
-
-  sortOptions.forEach(function(option) {
-    option.addEventListener("click", function() {
-      currentSort = option.dataset.sort
-      sortMenu.classList.remove("visible")
-      renderTasks()
-    })
-  })
-
+ 
   document.addEventListener("click", function() {
-    sortMenu.classList.remove("visible")
+    menu.classList.remove("open")
   })
 }
+
+
+
 renderTasks()
 initTabs()
 initSearch()
 initSort()
 initModal()
+initCardActions()
+initHamburger()
+deleteTask()
