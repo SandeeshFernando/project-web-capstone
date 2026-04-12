@@ -106,7 +106,7 @@ function renderTasks() {
     return task.name.toLowerCase().includes(search) ||
            task.desc.toLowerCase().includes(search)
   })
-// Sort kranne methna
+// sorting loop
 
   if (currentSort === "name") {
     filtered.sort(function(a, b) {
